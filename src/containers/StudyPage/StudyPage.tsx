@@ -60,7 +60,9 @@ const StudyPage: React.FC<StudyPageProps> = ({ deckId, onGoHome }) => {
           className="h-full bg-indigo-600 transition-all duration-300"
           style={{
             width: session
-              ? `${((session.currentIndex + 1) / session.totalCards) * 100}%`
+              ? session.totalCards === 0
+                ? '0%'
+                : `${((session.currentIndex + 1) / session.totalCards) * 100}%`
               : '0%',
           }}
         />

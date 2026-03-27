@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import type { StudySession, SwipeDirection, StudyRecord } from '../types'
+import type { StudySession, SwipeDirection, StudyRecord, Card } from '../types'
 import { useDeckStore } from './useDeckStore'
 
 export interface Toast {
@@ -21,7 +21,7 @@ interface StudyStore {
   startSession: (deckId: string) => void
   flipCard: () => void
   swipe: (direction: SwipeDirection) => void
-  currentCard: () => ReturnType<typeof useDeckStore.getState>['decks'][0]['cards'][0] | null
+  currentCard: () => Card | null
   getSessionSummary: () => SessionSummary | null
   addToast: (message: string, type: Toast['type']) => void
   removeToast: (toastId: string) => void
@@ -38,14 +38,15 @@ export const useStudyStore = create<StudyStore>()((set, get) => ({
   startSession: (deckId) => {
     const deck = useDeckStore.getState().getDeckById(deckId)
     if (!deck) return
+    const totalCards = deck.cards.length
     set({
       session: {
         deckId,
         currentIndex: 0,
-        totalCards: deck.cards.length,
+        totalCards,
         records: [],
         isFlipped: false,
-        isComplete: false,
+        isComplete: totalCards === 0,
       },
     })
   },
@@ -69,16 +70,22 @@ export const useStudyStore = create<StudyStore>()((set, get) => ({
       if (!currentCard) return state
 
       if (direction === 'left') {
+        const alreadyRecorded = state.session.records.some(
+          (r) => r.cardId === currentCard.id,
+        )
         const record: StudyRecord = {
           cardId: currentCard.id,
           result: 'unknown',
           timestamp: new Date().toISOString(),
         }
+        const records = alreadyRecorded
+          ? state.session.records
+          : [...state.session.records, record]
         return {
           session: {
             ...state.session,
             isFlipped: true,
-            records: [...state.session.records, record],
+            records,
           },
         }
       }

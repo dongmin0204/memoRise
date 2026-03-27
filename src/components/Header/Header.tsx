@@ -39,7 +39,7 @@ function Header({
                 variant="outline"
                 size="icon"
                 onClick={onToggleDeckSidebar}
-                aria-label="단어장 접었다/폈다"
+                aria-label="단어장 사이드바 토글"
               >
                 <span className="sr-only">단어장 토글</span>
                 <Menu className="h-4 w-4" aria-hidden="true" />
