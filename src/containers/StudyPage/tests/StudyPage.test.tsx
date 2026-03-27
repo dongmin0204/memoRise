@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import { fireEvent } from '@testing-library/react'
+import { fireEvent, within } from '@testing-library/react'
 import { render } from '@test/test-utils'
 import StudyPage from '../StudyPage'
 import { useDeckStore } from '@/store/useDeckStore'
@@ -71,17 +71,19 @@ describe('StudyPage', () => {
   it('카드 추가 폼으로 새 카드를 추가할 수 있다', () => {
     const deckId = setupDeck()
     const { getByRole } = render(<StudyPage deckId={deckId} />)
+    fireEvent.click(getByRole('button', { name: /카드 추가 열기/i }))
+    const dialog = getByRole('dialog', { name: /카드 추가/i })
 
-    fireEvent.change(getByRole('textbox', { name: /카드 앞면/i }), {
+    fireEvent.change(within(dialog).getByRole('textbox', { name: /카드 앞면/i }), {
       target: { value: 'Cherry' },
     })
-    fireEvent.change(getByRole('textbox', { name: /카드 뒷면/i }), {
+    fireEvent.change(within(dialog).getByRole('textbox', { name: /카드 뒷면/i }), {
       target: { value: '체리' },
     })
-    fireEvent.change(getByRole('textbox', { name: /카드 태그/i }), {
+    fireEvent.change(within(dialog).getByRole('textbox', { name: /카드 태그/i }), {
       target: { value: '과일, 빨강' },
     })
-    fireEvent.click(getByRole('button', { name: /카드 추가/i }))
+    fireEvent.click(within(dialog).getByRole('button', { name: /^카드 추가$/i }))
 
     const deck = useDeckStore.getState().getDeckById(deckId)
     expect(deck?.cards).toHaveLength(3)
@@ -96,14 +98,16 @@ describe('StudyPage', () => {
     expect(
       getByText(/아직 카드가 없습니다. 아래 폼에서 첫 카드를 추가해 주세요./i),
     ).toBeInTheDocument()
+    fireEvent.click(getByRole('button', { name: /카드 추가 열기/i }))
+    const dialog = getByRole('dialog', { name: /카드 추가/i })
 
-    fireEvent.change(getByRole('textbox', { name: /카드 앞면/i }), {
+    fireEvent.change(within(dialog).getByRole('textbox', { name: /카드 앞면/i }), {
       target: { value: 'Start' },
     })
-    fireEvent.change(getByRole('textbox', { name: /카드 뒷면/i }), {
+    fireEvent.change(within(dialog).getByRole('textbox', { name: /카드 뒷면/i }), {
       target: { value: '시작' },
     })
-    fireEvent.click(getByRole('button', { name: /카드 추가/i }))
+    fireEvent.click(within(dialog).getByRole('button', { name: /^카드 추가$/i }))
 
     expect(getByText('Start')).toBeInTheDocument()
     const deck = useDeckStore.getState().getDeckById(deckId)
