@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react'
 import { useDeckStore } from '@/store/useDeckStore'
 import { useStudyStore } from '@/store/useStudyStore'
 import { useAddCard } from '@/hooks/useAddCard'
+import { Button } from '@/components/ui/button'
+import { X } from 'lucide-react'
 import Flashcard from './components/Flashcard'
 import StudyResult from './components/StudyResult'
 import Toast from './components/Toast'
@@ -18,6 +20,7 @@ const StudyPage: React.FC<StudyPageProps> = ({ deckId, onGoHome }) => {
   const [frontInput, setFrontInput] = useState('')
   const [backInput, setBackInput] = useState('')
   const [tagsInput, setTagsInput] = useState('')
+  const [isAddOpen, setIsAddOpen] = useState(false)
 
   useEffect(() => {
     // persist hydrate 이후 deck이 늦게 생길 수 있으므로 deck/startSession도 의존성에 포함한다.
@@ -52,6 +55,13 @@ const StudyPage: React.FC<StudyPageProps> = ({ deckId, onGoHome }) => {
   }
 
   const card = currentCard()
+  const closeAddModal = () => {
+    setIsAddOpen(false)
+    setFrontInput('')
+    setBackInput('')
+    setTagsInput('')
+  }
+
   const handleAddCard = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     const result = addCard({
@@ -73,6 +83,7 @@ const StudyPage: React.FC<StudyPageProps> = ({ deckId, onGoHome }) => {
     setFrontInput('')
     setBackInput('')
     setTagsInput('')
+    setIsAddOpen(false)
     addToast('카드가 추가되었습니다', 'success')
     startSession(deckId)
   }
@@ -129,56 +140,91 @@ const StudyPage: React.FC<StudyPageProps> = ({ deckId, onGoHome }) => {
         </div>
       )}
 
-      <form
-        onSubmit={handleAddCard}
-        className="rounded-2xl border border-gray-200 bg-white p-4 space-y-3"
-      >
-        <div className="space-y-1">
-          <label htmlFor="study-add-front" className="text-sm font-medium text-gray-800">
-            카드 앞면
-          </label>
-          <input
-            id="study-add-front"
-            type="text"
-            value={frontInput}
-            onChange={(event) => setFrontInput(event.target.value)}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
-            placeholder="예: Apple"
-          />
-        </div>
-        <div className="space-y-1">
-          <label htmlFor="study-add-back" className="text-sm font-medium text-gray-800">
-            카드 뒷면
-          </label>
-          <input
-            id="study-add-back"
-            type="text"
-            value={backInput}
-            onChange={(event) => setBackInput(event.target.value)}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
-            placeholder="예: 사과"
-          />
-        </div>
-        <div className="space-y-1">
-          <label htmlFor="study-add-tags" className="text-sm font-medium text-gray-800">
-            카드 태그
-          </label>
-          <input
-            id="study-add-tags"
-            type="text"
-            value={tagsInput}
-            onChange={(event) => setTagsInput(event.target.value)}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
-            placeholder="예: 과일, 영어"
-          />
-        </div>
+      <div className="flex justify-end">
         <button
-          type="submit"
-          className="w-full rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-indigo-700"
+          type="button"
+          onClick={() => setIsAddOpen(true)}
+          className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-indigo-700"
         >
-          카드 추가
+          카드 추가 열기
         </button>
-      </form>
+      </div>
+
+      {isAddOpen && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="카드 추가"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) closeAddModal()
+          }}
+        >
+          <div className="w-full max-w-md rounded-2xl border border-gray-200 bg-white p-4">
+            <div className="mb-3 flex items-center justify-between">
+              <div className="font-semibold text-gray-900">카드 추가</div>
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                aria-label="닫기"
+                onClick={closeAddModal}
+              >
+                <X className="h-4 w-4" aria-hidden="true" />
+              </Button>
+            </div>
+            <form onSubmit={handleAddCard} className="space-y-3">
+              <div className="space-y-1">
+                <label htmlFor="study-add-front" className="text-sm font-medium text-gray-800">
+                  카드 앞면
+                </label>
+                <input
+                  id="study-add-front"
+                  type="text"
+                  value={frontInput}
+                  onChange={(event) => setFrontInput(event.target.value)}
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                  placeholder="예: Apple"
+                />
+              </div>
+              <div className="space-y-1">
+                <label htmlFor="study-add-back" className="text-sm font-medium text-gray-800">
+                  카드 뒷면
+                </label>
+                <input
+                  id="study-add-back"
+                  type="text"
+                  value={backInput}
+                  onChange={(event) => setBackInput(event.target.value)}
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                  placeholder="예: 사과"
+                />
+              </div>
+              <div className="space-y-1">
+                <label htmlFor="study-add-tags" className="text-sm font-medium text-gray-800">
+                  카드 태그
+                </label>
+                <input
+                  id="study-add-tags"
+                  type="text"
+                  value={tagsInput}
+                  onChange={(event) => setTagsInput(event.target.value)}
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                  placeholder="예: 과일, 영어"
+                />
+              </div>
+              <div className="flex gap-2 pt-1">
+                <Button type="button" variant="outline" size="default" onClick={closeAddModal}>
+                  취소
+                </Button>
+                <Button type="submit" size="default">
+                  카드 추가
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       <div className="fixed bottom-4 left-0 right-0 flex flex-col items-center gap-2 px-4 pointer-events-none">
         {toasts.map((t) => (
