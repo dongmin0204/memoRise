@@ -1,6 +1,7 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useDeckStore } from '@/store/useDeckStore'
 import { useStudyStore } from '@/store/useStudyStore'
+import { useAddCard } from '@/hooks/useAddCard'
 import Flashcard from './components/Flashcard'
 import StudyResult from './components/StudyResult'
 import Toast from './components/Toast'
@@ -13,11 +14,20 @@ interface StudyPageProps {
 const StudyPage: React.FC<StudyPageProps> = ({ deckId, onGoHome }) => {
   const deck = useDeckStore((s) => s.getDeckById(deckId))
   const { session, toasts, startSession, flipCard, swipe, currentCard, getSessionSummary, addToast, removeToast } = useStudyStore()
+  const addCard = useAddCard(deckId)
+  const [frontInput, setFrontInput] = useState('')
+  const [backInput, setBackInput] = useState('')
+  const [tagsInput, setTagsInput] = useState('')
 
   useEffect(() => {
-    if (deck) startSession(deckId)
-  }, [deckId])
+    // persist hydrate 이후 deck이 늦게 생길 수 있으므로 deck/startSession도 의존성에 포함한다.
+    if (!deck) return
 
+    // 동일한 덱 세션이 이미 초기화되어 있으면 재초기화하지 않는다.
+    if (session?.deckId === deckId) return
+
+    startSession(deckId)
+  }, [deck, deckId, session?.deckId, startSession])
   if (!deck) {
     return (
       <div className="flex items-center justify-center min-h-[50vh]">
@@ -26,7 +36,9 @@ const StudyPage: React.FC<StudyPageProps> = ({ deckId, onGoHome }) => {
     )
   }
 
-  if (session?.isComplete) {
+  const isEmptySession = session?.isComplete && session.totalCards === 0
+
+  if (session?.isComplete && !isEmptySession) {
     const summary = getSessionSummary()
     return (
       <StudyResult
@@ -40,6 +52,30 @@ const StudyPage: React.FC<StudyPageProps> = ({ deckId, onGoHome }) => {
   }
 
   const card = currentCard()
+  const handleAddCard = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    const result = addCard({
+      front: frontInput,
+      back: backInput,
+      tags: tagsInput,
+    })
+
+    if (!result.ok) {
+      addToast(
+        result.error === 'FRONT_REQUIRED'
+          ? '앞면 내용을 입력해 주세요'
+          : '뒷면 내용을 입력해 주세요',
+        'error',
+      )
+      return
+    }
+
+    setFrontInput('')
+    setBackInput('')
+    setTagsInput('')
+    addToast('카드가 추가되었습니다', 'success')
+    startSession(deckId)
+  }
 
   return (
     <div className="flex flex-col gap-4 max-w-2xl mx-auto">
