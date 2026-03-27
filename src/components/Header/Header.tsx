@@ -16,7 +16,7 @@ function Header({
 }: HeaderProps) {
   return (
     <header className="bg-white shadow-md">
-      <nav className="container mx-auto px-4 py-4">
+      <nav className="container px-4 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             {isDesktop ? (
