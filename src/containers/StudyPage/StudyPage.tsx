@@ -123,6 +123,63 @@ const StudyPage: React.FC<StudyPageProps> = ({ deckId, onGoHome }) => {
         </div>
       )}
 
+      {!card && session?.totalCards === 0 && (
+        <div className="rounded-2xl border border-dashed border-gray-300 bg-gray-50 p-4 text-sm text-gray-600">
+          아직 카드가 없습니다. 아래 폼에서 첫 카드를 추가해 주세요.
+        </div>
+      )}
+
+      <form
+        onSubmit={handleAddCard}
+        className="rounded-2xl border border-gray-200 bg-white p-4 space-y-3"
+      >
+        <div className="space-y-1">
+          <label htmlFor="study-add-front" className="text-sm font-medium text-gray-800">
+            카드 앞면
+          </label>
+          <input
+            id="study-add-front"
+            type="text"
+            value={frontInput}
+            onChange={(event) => setFrontInput(event.target.value)}
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+            placeholder="예: Apple"
+          />
+        </div>
+        <div className="space-y-1">
+          <label htmlFor="study-add-back" className="text-sm font-medium text-gray-800">
+            카드 뒷면
+          </label>
+          <input
+            id="study-add-back"
+            type="text"
+            value={backInput}
+            onChange={(event) => setBackInput(event.target.value)}
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+            placeholder="예: 사과"
+          />
+        </div>
+        <div className="space-y-1">
+          <label htmlFor="study-add-tags" className="text-sm font-medium text-gray-800">
+            카드 태그
+          </label>
+          <input
+            id="study-add-tags"
+            type="text"
+            value={tagsInput}
+            onChange={(event) => setTagsInput(event.target.value)}
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+            placeholder="예: 과일, 영어"
+          />
+        </div>
+        <button
+          type="submit"
+          className="w-full rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-indigo-700"
+        >
+          카드 추가
+        </button>
+      </form>
+
       <div className="fixed bottom-4 left-0 right-0 flex flex-col items-center gap-2 px-4 pointer-events-none">
         {toasts.map((t) => (
           <div key={t.id} className="pointer-events-auto">
